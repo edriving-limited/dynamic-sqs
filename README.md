@@ -40,12 +40,12 @@ pairs, the key being the ID that's in your payload, and the value being the clas
 ## Payload Format
 
 Your SQS payloads will need to be in a specific format for this to work. In your JSON object, you simple need two
-properties, `jobClassId` and `data`. The `jobClassId` is ID that is used to map this particular payload to a job
+properties, `job_class_id` and `data`. The `job_class_id` is ID that is used to map this particular payload to a job
 class, `data` is any additional data required for the job.
 
 ```json
 {
-  "jobClassId": "sendWelcomeEmail",
+  "job_class_id": "sendWelcomeEmail",
   "data": {
     "userId": 100
   }

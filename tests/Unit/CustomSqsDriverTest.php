@@ -163,8 +163,8 @@ class CustomSqsDriverTest extends \eDriving\CustomSqsDriver\Tests\TestCase
     private function getCustomJobMessage(?array $data = null): Result
     {
         $body = json_encode([
-            'jobClassId' => 'example_job',
-            'data' => $data ?? ['driverId' => 100]
+            'job_class_id' => 'example_job',
+            'data' => $data ?? ['driverId' => 100, 'test' => true]
         ]);
 
         return new Result([

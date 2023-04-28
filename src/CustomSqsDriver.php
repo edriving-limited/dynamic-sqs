@@ -75,7 +75,7 @@ class CustomSqsDriver extends SqsQueue
      */
     public function getCustomJobPayload(array $body, string $queue): string
     {
-        $classId = $body['jobClassId'];
+        $classId = $body['job_class_id'];
         $jobClass = $this->mapToJob($classId);
 
         if (!$jobClass) {
