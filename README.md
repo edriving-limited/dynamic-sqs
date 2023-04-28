@@ -19,6 +19,7 @@ your SQS queue configuration like so...
     'sqs' => [
         'driver' => 'custom-sqs',
         // ...
+        
     ]
 ]
 ```
@@ -57,8 +58,9 @@ class, `data` is any additional data required for the job.
 When this job is instantiated, the job class constructor arguments are parsed and mapped to values in your payload data.
 So for the given payload above and job class below, the `userId` argument will correctly be passed.
 
-**Warning**: If you don't have any matching properties in your payload for a constructor argument, then as exception
-will be thrown.
+You must guarantee that either you have all the required arguments in your payload, or for any that don't, you provide
+a default value in the constructor argument. Otherwise, `null` will be passed which could cause type errors or
+unexpected behavior.
 
 ```php
 class SendWelcomeEmailJob implements \Illuminate\Contracts\Queue\ShouldQueue {
@@ -67,9 +69,17 @@ class SendWelcomeEmailJob implements \Illuminate\Contracts\Queue\ShouldQueue {
     /** @var int */
     private $driverId;
     
-    public function __construct(int $driverId)
+    /** @var bool */
+    private $isActive;
+    
+    /** @var bool */
+    private $isSubscriber;
+    
+    public function __construct(int $driverId, bool $isActive, bool $isSubscriber = false)
     {
         $this->driverId = $driverId; // This will be 100
+        $this->isActive = $isActive; // This will cause a type error, since it's not in the payload and there is no default value
+        $this->isSubscriber = $isSubscriber; // This will be false since we provide that as a default value
     }
 }
 ```

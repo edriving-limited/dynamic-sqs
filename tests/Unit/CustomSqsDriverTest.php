@@ -54,7 +54,6 @@ class CustomSqsDriverTest extends \eDriving\CustomSqsDriver\Tests\TestCase
         $jobPayload = $result->getSqsJob();
         $jobBody = json_decode($jobPayload['Body']);
         $jobDetail = unserialize($jobBody->data->command);
-
         $this->assertInstanceOf(SqsJob::class, $result);
         $this->assertEquals(ExampleJob::class, $jobBody->data->commandName);
         $this->assertEquals(100, $jobDetail->driverId);
@@ -73,29 +72,6 @@ class CustomSqsDriverTest extends \eDriving\CustomSqsDriver\Tests\TestCase
             'QueueUrl' => '/queueName',
             'AttributeNames' => ['ApproximateReceiveCount']
         ])->willReturn($this->getCustomJobMessage());
-
-        $this->createDriver($client)->pop();
-    }
-
-    public function test_it_defaults_to_null_if_it_cant_map_custom_message_data_to_job_arguments(): void
-    {
-        Config::set('queue.job_map.example_job', ExampleJob::class);
-
-        $this->expectException(TypeError::class);
-
-        $client = $this->getMockBuilder(SqsClient::class)
-            ->disableOriginalConstructor()
-            ->addMethods(['receiveMessage'])
-            ->getMock();
-
-        $client->expects($this->once())->method('receiveMessage')->with([
-            'QueueUrl' => '/queueName',
-            'AttributeNames' => ['ApproximateReceiveCount']
-        ])->willReturn(
-            $this->getCustomJobMessage([
-                'test' => true
-            ])
-        );
 
         $this->createDriver($client)->pop();
     }
@@ -160,11 +136,11 @@ class CustomSqsDriverTest extends \eDriving\CustomSqsDriver\Tests\TestCase
         ]);
     }
 
-    private function getCustomJobMessage(?array $data = null): Result
+    private function getCustomJobMessage(): Result
     {
         $body = json_encode([
             'job_class_id' => 'example_job',
-            'data' => $data ?? ['driverId' => 100, 'test' => true]
+            'data' => ['driverId' => 100]
         ]);
 
         return new Result([

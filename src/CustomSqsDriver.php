@@ -60,10 +60,10 @@ class CustomSqsDriver extends SqsQueue
 
         $args = [];
         foreach ($params as $param) {
-            $args[] = $body[$param->name] ?? null;
+            $args[$param->name] = $body[$param->name] ?? $param->getDefaultValue();
         }
 
-        return new $jobClass(...$args);
+        return app($jobClass, $args);
     }
 
     /**
