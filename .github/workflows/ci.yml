@@ -67,7 +67,7 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    name: Lint code with PHP${{ matrix.php-versions }}
+    name: Lint code with PHP ${{ matrix.php-version }}
 
     strategy:
       matrix:
@@ -82,7 +82,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-versions }}
+          php-version: ${{ matrix.php-version }}
 
       - name: Get changed files
         id: changed-files
@@ -101,7 +101,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         uses: php-actions/composer@v6
         with:
-          php_version: ${{ matrix.php-versions }}
+          php_version: ${{ matrix.php-version }}
 
       - name: Cache composer dependencies
         uses: actions/cache/save@v3
@@ -115,7 +115,7 @@ jobs:
 
   tests:
     runs-on: ubuntu-latest
-    name: Run tests with PHP${{ matrix.php-versions }}
+    name: Run tests with PHP ${{ matrix.php-version }}
 
     strategy:
       matrix:
@@ -130,7 +130,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-versions }}
+          php-version: ${{ matrix.php-version }}
 
       - name: Setup Laravel
         run: |
@@ -148,7 +148,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         uses: php-actions/composer@v6
         with:
-          php_version: ${{ matrix.php-versions }}
+          php_version: ${{ matrix.php-version }}
 
       - name: Cache composer dependencies
         uses: actions/cache/save@v3
