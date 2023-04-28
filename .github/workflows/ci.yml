@@ -158,7 +158,7 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('composer.lock') }}
 
       - name: Create cache folder for Orchestra
-        run: mkdir ${{ github.workspace }}/vendor/orchestra/testbench-core/laravel/bootstrap/cache
+        run: sudo chmod 777 -R ${{ github.workspace }}/vendor/orchestra/testbench-core/laravel/bootstrap/cache
 
       - name: Execute tests
         run: vendor/bin/phpunit
