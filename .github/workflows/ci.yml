@@ -67,7 +67,7 @@ jobs:
         with:
           phpcs_path: php ./vendor/bin/phpcs
           scope: 'files'
-          standard: phpcs.xml
+          standard: .phpcs.xml
 
   lint:
     runs-on: ubuntu-latest
