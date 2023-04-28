@@ -9,3 +9,7 @@ phpstan.neon
 testbench.yaml
 vendor
 node_modules
+/DOCKER_ENV
+/Dockerfile-php-build
+/docker_tag
+/output.log
