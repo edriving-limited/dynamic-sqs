@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<ruleset name="Laravel Standards">
+    <file>src</file>
+    <file>tests</file>
+
+    <ini name="memory_limit" value="128M"/>
+
+    <rule ref="PSR12">
+        <exclude name="PSR12.Files.FileHeader.SpacingInsideBlock"/>
+    </rule>
+
+    <rule ref="PSR1.Methods.CamelCapsMethodName.NotCamelCaps">
+        <exclude-pattern>tests</exclude-pattern>
+    </rule>
+
+    <rule ref="PSR1.Classes.ClassDeclaration.MultipleClasses">
+        <exclude-pattern>tests</exclude-pattern>
+    </rule>
+</ruleset>

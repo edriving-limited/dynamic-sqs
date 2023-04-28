@@ -1,0 +1,168 @@
+name: CI
+
+on:
+  pull_request:
+
+env:
+  PHP_VERSION: "7.3"
+  DB_HOST: 127.0.0.1:33306
+
+jobs:
+  code_style:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GA_TOKEN }}
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v32
+        with:
+          separator: " "
+
+      - name: Try to restore cached composer dependencies
+        uses: actions/cache/restore@v3
+        id: cache
+        with:
+          path: 'vendor'
+          key: ${{ runner.os }}-${{ hashFiles('composer.lock') }}
+
+      - name: Install composer dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: php-actions/composer@v6
+        with:
+          php_version: ${{ env.PHP_VERSION }}
+
+      - name: Cache composer dependencies
+        uses: actions/cache/save@v3
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          path: 'vendor'
+          key: ${{ runner.os }}-${{ hashFiles('composer.lock') }}
+
+      - name: Beautify Files
+        continue-on-error: true
+        run: ./vendor/bin/phpcbf -q ${{ steps.changed-files.outputs.all_changed_files }}
+
+      - name: Commit changes
+        id: commit
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: 'Code Style Fixes'
+          skip_fetch: true
+          commit_user_name: bot-edriving
+          commit_user_email: keiron.lowe+edrivingbot@edriving.com
+          commit_author: eDriving Bot <keiron.lowe+edrivingbot@edriving.com>
+
+      - name: Cancel workflow if changes detected
+        uses: andymckay/cancel-action@0.3
+        if: steps.commit.outputs.changes_detected == 'true'
+
+      - name: Run PHPCS
+        uses: thenabeel/action-phpcs@v8
+        with:
+          phpcs_path: php ./vendor/bin/phpcs
+          scope: 'files'
+          standard: phpcs.xml
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v32
+        with:
+          separator: " "
+
+      - name: Try to restore cached composer dependencies
+        uses: actions/cache/restore@v3
+        id: cache
+        with:
+          path: 'vendor'
+          key: ${{ runner.os }}-${{ hashFiles('composer.lock') }}
+
+      - name: Install composer dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: php-actions/composer@v6
+        with:
+          php_version: ${{ env.PHP_VERSION }}
+
+      - name: Cache composer dependencies
+        uses: actions/cache/save@v3
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          path: 'vendor'
+          key: ${{ runner.os }}-${{ hashFiles('composer.lock') }}
+
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyse ${{ steps.changed-files.outputs.all_changed_files }} --error-format=github
+
+  tests:
+    runs-on: ubuntu-latest
+
+    services:
+      database:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: password
+          MYSQL_DATABASE: courses_api_testing_db
+        ports:
+          - 33306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+
+      - name: Setup Laravel
+        run: |
+          php -r "file_exists('.env') || copy('.env.example', '.env');"
+          mkdir -p storage/framework/{sessions,views,cache}
+
+      - name: Try to restore cached composer dependencies
+        uses: actions/cache/restore@v3
+        id: cache
+        with:
+          path: 'vendor'
+          key: ${{ runner.os }}-${{ hashFiles('composer.lock') }}
+
+      - name: Install composer dependencies
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: php-actions/composer@v6
+        with:
+          php_version: ${{ env.PHP_VERSION }}
+
+      - name: Cache composer dependencies
+        uses: actions/cache/save@v3
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          path: 'vendor'
+          key: ${{ runner.os }}-${{ hashFiles('composer.lock') }}
+
+      - name: Create driver profile database
+        run: mysql --host 127.0.0.1 --port 33306 -uroot -ppassword -e "CREATE DATABASE IF NOT EXISTS vrm_driver_profiles;"
+
+      - name: Execute tests
+        run: vendor/bin/phpunit
