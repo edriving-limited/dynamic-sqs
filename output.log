@@ -116,3 +116,67 @@ Skipping env variable PWD
 Skipping env variable HOME
 Skipping env variable SHLVL
 Skipping env variable PATH
+Running php-build composer
+WARNING! Your password will be stored unencrypted in /home/runner/.docker/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+Login Succeeded
+Pulling docker.pkg.github.com/edriving-limited/custom-sqs-driver/php-actions_composer_custom-sqs-driver:php-7.3-build2.1.0
+php-7.3-build2.1.0: Pulling from edriving-limited/custom-sqs-driver/php-actions_composer_custom-sqs-driver
+3d2430473443: Pulling fs layer
+459cf206553a: Pulling fs layer
+672bda396649: Pulling fs layer
+71751fed054d: Pulling fs layer
+8dce0d3bfb80: Pulling fs layer
+9d37fa671e43: Pulling fs layer
+1ad5a9ad4024: Pulling fs layer
+0fa61c5e63fa: Pulling fs layer
+53b6c10fa480: Pulling fs layer
+a4be69565a3f: Pulling fs layer
+71751fed054d: Waiting
+8dce0d3bfb80: Waiting
+9d37fa671e43: Waiting
+1ad5a9ad4024: Waiting
+0fa61c5e63fa: Waiting
+53b6c10fa480: Waiting
+a4be69565a3f: Waiting
+459cf206553a: Download complete
+3d2430473443: Verifying Checksum
+672bda396649: Verifying Checksum
+672bda396649: Download complete
+3d2430473443: Pull complete
+71751fed054d: Verifying Checksum
+71751fed054d: Download complete
+9d37fa671e43: Verifying Checksum
+9d37fa671e43: Download complete
+8dce0d3bfb80: Verifying Checksum
+8dce0d3bfb80: Download complete
+459cf206553a: Pull complete
+0fa61c5e63fa: Verifying Checksum
+0fa61c5e63fa: Download complete
+1ad5a9ad4024: Verifying Checksum
+1ad5a9ad4024: Download complete
+53b6c10fa480: Verifying Checksum
+53b6c10fa480: Download complete
+672bda396649: Pull complete
+71751fed054d: Pull complete
+8dce0d3bfb80: Pull complete
+9d37fa671e43: Pull complete
+a4be69565a3f: Verifying Checksum
+a4be69565a3f: Download complete
+1ad5a9ad4024: Pull complete
+0fa61c5e63fa: Pull complete
+53b6c10fa480: Pull complete
+a4be69565a3f: Pull complete
+Digest: sha256:5ef023d03d9771fac2914d2d0ad63b99dcedeb114075fb8e3055d77de1a469a5
+Status: Downloaded newer image for docker.pkg.github.com/edriving-limited/custom-sqs-driver/php-actions_composer_custom-sqs-driver:php-7.3-build2.1.0
+docker.pkg.github.com/edriving-limited/custom-sqs-driver/php-actions_composer_custom-sqs-driver:php-7.3-build2.1.0
+Docker tag: docker.pkg.github.com/edriving-limited/custom-sqs-driver/php-actions_composer_custom-sqs-driver:php-7.3-build2.1.0
+No private keys supplied
+Command: composer install --no-progress --no-interaction
+Skipping env variable PHP_VERSION
+Skipping env variable PWD
+Skipping env variable HOME
+Skipping env variable SHLVL
+Skipping env variable PATH
