@@ -3,10 +3,6 @@ name: CI
 on:
   pull_request:
 
-env:
-  PHP_VERSION: "7.3"
-  DB_HOST: 127.0.0.1:33306
-
 jobs:
   code_style:
     runs-on: ubuntu-latest
@@ -35,7 +31,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         uses: php-actions/composer@v6
         with:
-          php_version: ${{ env.PHP_VERSION }}
+          php_version: 8.1
 
       - name: Cache composer dependencies
         uses: actions/cache/save@v3
@@ -67,10 +63,15 @@ jobs:
         with:
           phpcs_path: php ./vendor/bin/phpcs
           scope: 'files'
-          standard: phpcs.xml
+          standard: .phpcs.xml
 
   lint:
     runs-on: ubuntu-latest
+    name: Lint code with PHP ${{ matrix.php-version }}
+
+    strategy:
+      matrix:
+        php-version: [ '7.3', '7.4', '8.0', '8.1' ]
 
     steps:
       - name: Checkout Code
@@ -81,7 +82,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ env.PHP_VERSION }}
+          php-version: ${{ matrix.php-version }}
 
       - name: Get changed files
         id: changed-files
@@ -100,7 +101,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         uses: php-actions/composer@v6
         with:
-          php_version: ${{ env.PHP_VERSION }}
+          php_version: ${{ matrix.php-version }}
 
       - name: Cache composer dependencies
         uses: actions/cache/save@v3
@@ -114,16 +115,11 @@ jobs:
 
   tests:
     runs-on: ubuntu-latest
+    name: Run tests with PHP ${{ matrix.php-version }}
 
-    services:
-      database:
-        image: mysql:5.7
-        env:
-          MYSQL_ROOT_PASSWORD: password
-          MYSQL_DATABASE: courses_api_testing_db
-        ports:
-          - 33306:3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    strategy:
+      matrix:
+        php-version: [ '7.3', '7.4', '8.0', '8.1' ]
 
     steps:
       - name: Checkout Code
@@ -134,7 +130,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ env.PHP_VERSION }}
+          php-version: ${{ matrix.php-version }}
 
       - name: Setup Laravel
         run: |
@@ -152,7 +148,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         uses: php-actions/composer@v6
         with:
-          php_version: ${{ env.PHP_VERSION }}
+          php_version: ${{ matrix.php-version }}
 
       - name: Cache composer dependencies
         uses: actions/cache/save@v3
@@ -161,8 +157,8 @@ jobs:
           path: 'vendor'
           key: ${{ runner.os }}-${{ hashFiles('composer.lock') }}
 
-      - name: Create driver profile database
-        run: mysql --host 127.0.0.1 --port 33306 -uroot -ppassword -e "CREATE DATABASE IF NOT EXISTS vrm_driver_profiles;"
+      - name: Create cache folder for Orchestra
+        run: sudo chmod 777 -R ${{ github.workspace }}/vendor/orchestra/testbench-core/laravel/bootstrap/cache
 
       - name: Execute tests
         run: vendor/bin/phpunit

@@ -16,13 +16,13 @@
     }
   ],
   "require": {
-    "php": "^7.3|^7.4|^8.0|^8.1|^8.2",
+    "php": "^7.3|^7.4|^8.0|^8.1",
     "aws/aws-sdk-php": "^3.269",
     "illuminate/contracts": "^7.0|^8.0|^9.0|^10.0"
   },
   "require-dev": {
     "nunomaduro/larastan": "^1.0",
-    "orchestra/testbench": "^5.0",
+    "orchestra/testbench": "^5.0|^6.0|^7.0|^8.0",
     "phpunit/phpunit": "^9.6",
     "squizlabs/php_codesniffer": "*"
   },
