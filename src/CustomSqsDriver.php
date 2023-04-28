@@ -60,11 +60,7 @@ class CustomSqsDriver extends SqsQueue
 
         $args = [];
         foreach ($params as $param) {
-            if (!isset($body[$param->name])) {
-                throw new InvalidArgumentException("Argument \"$param->name\" not found");
-            }
-
-            $args[] = $body[$param->name];
+            $args[] = $body[$param->name] ?? null;
         }
 
         return new $jobClass(...$args);

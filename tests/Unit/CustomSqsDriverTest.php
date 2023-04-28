@@ -15,6 +15,7 @@ use Illuminate\Queue\Jobs\SqsJob;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Config;
 use InvalidArgumentException;
+use TypeError;
 
 class CustomSqsDriverTest extends \eDriving\CustomSqsDriver\Tests\TestCase
 {
@@ -76,11 +77,11 @@ class CustomSqsDriverTest extends \eDriving\CustomSqsDriver\Tests\TestCase
         $this->createDriver($client)->pop();
     }
 
-    public function test_it_throws_an_exception_if_it_cant_map_custom_message_data_to_job_arguments(): void
+    public function test_it_defaults_to_null_if_it_cant_map_custom_message_data_to_job_arguments(): void
     {
         Config::set('queue.job_map.example_job', ExampleJob::class);
 
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(TypeError::class);
 
         $client = $this->getMockBuilder(SqsClient::class)
             ->disableOriginalConstructor()
@@ -185,7 +186,7 @@ class ExampleJob implements ShouldQueue
     /** @var int */
     public $driverId;
 
-    public function __construct(int $driverId)
+    public function __construct(int $driverId, bool $test = true)
     {
         $this->driverId = $driverId;
     }
