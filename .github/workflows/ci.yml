@@ -4,7 +4,7 @@ on:
   pull_request:
 
 env:
-  PHP_VERSION: "7.3"
+  PHP_VERSIONS: [ '7.3', '7.4', '8.0', '8.1' ]
 
 jobs:
   code_style:
@@ -70,6 +70,11 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
+    name: Lint code with PHP${{ matrix.php-versions }}
+
+    strategy:
+      matrix:
+        php-version: ${{ env.PHP_VERSIONS }}
 
     steps:
       - name: Checkout Code
@@ -80,7 +85,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ env.PHP_VERSION }}
+          php-version: ${{ matrix.php-versions }}
 
       - name: Get changed files
         id: changed-files
@@ -99,7 +104,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         uses: php-actions/composer@v6
         with:
-          php_version: ${{ env.PHP_VERSION }}
+          php_version: ${{ matrix.php-versions }}
 
       - name: Cache composer dependencies
         uses: actions/cache/save@v3
@@ -113,6 +118,11 @@ jobs:
 
   tests:
     runs-on: ubuntu-latest
+    name: Run tests with PHP${{ matrix.php-versions }}
+
+    strategy:
+      matrix:
+        php-version: ${{ env.PHP_VERSIONS }}
 
     steps:
       - name: Checkout Code
@@ -123,7 +133,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ env.PHP_VERSION }}
+          php-version: ${{ matrix.php-versions }}
 
       - name: Setup Laravel
         run: |
@@ -141,7 +151,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         uses: php-actions/composer@v6
         with:
-          php_version: ${{ env.PHP_VERSION }}
+          php_version: ${{ matrix.php-versions }}
 
       - name: Cache composer dependencies
         uses: actions/cache/save@v3
