@@ -12,11 +12,9 @@
     failOnRisky="true"
     failOnEmptyTestSuite="true"
     beStrictAboutOutputDuringTests="true"
-    cacheDirectory=".phpunit.cache"
-    backupStaticProperties="false"
 >
     <testsuites>
-        <testsuite name="VendorName Test Suite">
+        <testsuite name="eDriving Test Suite">
             <directory>tests</directory>
         </testsuite>
     </testsuites>
