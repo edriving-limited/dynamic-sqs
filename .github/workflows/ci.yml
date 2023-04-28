@@ -3,9 +3,6 @@ name: CI
 on:
   pull_request:
 
-env:
-  PHP_VERSIONS: [ '7.3', '7.4', '8.0', '8.1' ]
-
 jobs:
   code_style:
     runs-on: ubuntu-latest
@@ -74,7 +71,7 @@ jobs:
 
     strategy:
       matrix:
-        php-version: ${{ env.PHP_VERSIONS }}
+        php-version: [ '7.3', '7.4', '8.0', '8.1' ]
 
     steps:
       - name: Checkout Code
@@ -122,7 +119,7 @@ jobs:
 
     strategy:
       matrix:
-        php-version: ${{ env.PHP_VERSIONS }}
+        php-version: [ '7.3', '7.4', '8.0', '8.1' ]
 
     steps:
       - name: Checkout Code
