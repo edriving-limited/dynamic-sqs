@@ -5,25 +5,7 @@ payload, to a job class, and then passing in matching arguments between the cons
 
 ## Installation
 
-In your `composer.json` file, add this repo as a custom repository, and also add the require statement...
-
-```json
-// composer.json
-
-{
-  "repositories": [
-    {
-      "type": "git",
-      "url": "https://github.com/edriving-limited/custom-sqs-driver"
-    }
-  ],
-  "require": {
-    "edriving-limited/custom-sqs-driver": "dev-main"
-  }
-}
-```
-
-Then execute `composer update`.
+`composer require edriving-limited/custom-sqs-driver`
 
 ## Configuration
 
