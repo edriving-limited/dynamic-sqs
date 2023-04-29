@@ -1,6 +1,6 @@
 <?php
 
-namespace eDriving\CustomSqsDriver\Tests;
+namespace eDriving\DynamicSqs\Tests;
 
 use Orchestra\Testbench\TestCase as Orchestra;
 

@@ -1,11 +1,13 @@
 <?php
 
-namespace eDriving\CustomSqsDriver\Tests\Unit;
+namespace eDriving\DynamicSqs\Tests\Unit;
 
 use Aws\Result;
 use Aws\Sqs\SqsClient;
-use eDriving\CustomSqsDriver\CustomSqsDriver;
-use eDriving\CustomSqsDriver\Exceptions\InvalidMappingException;
+use eDriving\DynamicSqs\Contracts\JobHandlerContract;
+use eDriving\DynamicSqs\DynamicSqsQueue;
+use eDriving\DynamicSqs\Exceptions\HandlerNotDefinedException;
+use eDriving\DynamicSqs\Exceptions\HandlerNotFoundException;
 use Illuminate\Bus\Queueable;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -14,11 +16,18 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\Jobs\SqsJob;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Config;
-use InvalidArgumentException;
-use TypeError;
 
-class CustomSqsDriverTest extends \eDriving\CustomSqsDriver\Tests\TestCase
+class DynamicSqsQueueTest extends \eDriving\DynamicSqs\Tests\TestCase
 {
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        Config::set('dynamic-sqs.discoverer', function (array $payload): ?string {
+            return $payload['handler'] ?? null;
+        });
+    }
+
     public function test_it_can_handle_standard_laravel_jobs(): void
     {
         $client = $this->getMockBuilder(SqsClient::class)
@@ -31,14 +40,12 @@ class CustomSqsDriverTest extends \eDriving\CustomSqsDriver\Tests\TestCase
             'AttributeNames' => ['ApproximateReceiveCount']
         ])->willReturn($this->getLaravelJobMessage());
 
-        $result = $this->createDriver($client)->pop();
-
-        $this->assertInstanceOf(SqsJob::class, $result);
+        $this->assertInstanceOf(SqsJob::class, $this->createDriver($client)->pop());
     }
 
     public function test_it_can_handle_custom_jobs(): void
     {
-        Config::set('queue.job_map.example_job', ExampleJob::class);
+        Config::set('dynamic-sqs.map.example_job_handler', ExampleJobHandler::class);
 
         $client = $this->getMockBuilder(SqsClient::class)
             ->disableOriginalConstructor()
@@ -50,18 +57,12 @@ class CustomSqsDriverTest extends \eDriving\CustomSqsDriver\Tests\TestCase
             'AttributeNames' => ['ApproximateReceiveCount']
         ])->willReturn($this->getCustomJobMessage());
 
-        $result = $this->createDriver($client)->pop();
-        $jobPayload = $result->getSqsJob();
-        $jobBody = json_decode($jobPayload['Body']);
-        $jobDetail = unserialize($jobBody->data->command);
-        $this->assertInstanceOf(SqsJob::class, $result);
-        $this->assertEquals(ExampleJob::class, $jobBody->data->commandName);
-        $this->assertEquals(100, $jobDetail->driverId);
+        $this->assertInstanceOf(SqsJob::class, $this->createDriver($client)->pop());
     }
 
     public function test_it_throws_an_exception_if_it_cant_map_a_custom_message_to_a_job(): void
     {
-        $this->expectException(InvalidMappingException::class);
+        $this->expectException(HandlerNotFoundException::class);
 
         $client = $this->getMockBuilder(SqsClient::class)
             ->disableOriginalConstructor()
@@ -92,16 +93,46 @@ class CustomSqsDriverTest extends \eDriving\CustomSqsDriver\Tests\TestCase
             ])
         );
 
-        $driver = $this->createDriver($client);
-
-        $result = $driver->pop();
-
-        $this->assertNull($result);
+        $this->assertNull($this->createDriver($client)->pop());
     }
 
-    private function createDriver(SqsClient $client): CustomSqsDriver
+    public function test_it_throws_an_exception_for_custom_jobs_if_it_cant_determine_the_handler_id(): void
     {
-        $driver = app(CustomSqsDriver::class, [
+        $this->expectException(HandlerNotDefinedException::class);
+
+        $client = $this->getMockBuilder(SqsClient::class)
+            ->disableOriginalConstructor()
+            ->addMethods(['receiveMessage'])
+            ->getMock();
+
+        $client->expects($this->once())->method('receiveMessage')->with([
+            'QueueUrl' => '/queueName',
+            'AttributeNames' => ['ApproximateReceiveCount']
+        ])->willReturn($this->getCustomJobMessage(['id' => 'test']));
+
+        $this->assertInstanceOf(SqsJob::class, $this->createDriver($client)->pop());
+    }
+
+    public function test_it_throws_an_exception_for_custom_jobs_if_it_cant_find_a_matching_handler(): void
+    {
+        $this->expectException(HandlerNotFoundException::class);
+
+        $client = $this->getMockBuilder(SqsClient::class)
+            ->disableOriginalConstructor()
+            ->addMethods(['receiveMessage'])
+            ->getMock();
+
+        $client->expects($this->once())->method('receiveMessage')->with([
+            'QueueUrl' => '/queueName',
+            'AttributeNames' => ['ApproximateReceiveCount']
+        ])->willReturn($this->getCustomJobMessage());
+
+        $this->assertInstanceOf(SqsJob::class, $this->createDriver($client)->pop());
+    }
+
+    private function createDriver(SqsClient $client): DynamicSqsQueue
+    {
+        $driver = app(DynamicSqsQueue::class, [
             'sqs' => $client,
             'default' => 'queueName'
         ]);
@@ -111,6 +142,7 @@ class CustomSqsDriverTest extends \eDriving\CustomSqsDriver\Tests\TestCase
         return $driver;
     }
 
+    /** @return Result<string, mixed> */
     private function getLaravelJobMessage(): Result
     {
         $body = json_encode([
@@ -136,12 +168,18 @@ class CustomSqsDriverTest extends \eDriving\CustomSqsDriver\Tests\TestCase
         ]);
     }
 
-    private function getCustomJobMessage(): Result
+    /**
+     * @param null|array<string, mixed> $replacementData
+     * @return Result<string, mixed>
+     */
+    private function getCustomJobMessage(array $replacementData = null): Result
     {
-        $body = json_encode([
-            'job_class_id' => 'example_job',
-            'data' => ['driverId' => 100]
-        ]);
+        $body = json_encode(
+            $replacementData ?? [
+            'handler' => 'example_job_handler',
+            'data' => ['userId' => 100]
+            ]
+        );
 
         return new Result([
             'Messages' => [[
@@ -160,10 +198,22 @@ class ExampleJob implements ShouldQueue
     use SerializesModels;
 
     /** @var int */
-    public $driverId;
+    public $userId;
 
-    public function __construct(int $driverId, bool $test = true)
+    public function __construct(int $userId)
     {
-        $this->driverId = $driverId;
+        $this->userId = $userId;
+    }
+}
+
+class ExampleJobHandler implements JobHandlerContract
+{
+    /**
+     * @param array<string, mixed> $payload
+     * @return ShouldQueue
+     */
+    public function handle(array $payload): ShouldQueue
+    {
+        return new ExampleJob($payload['data']['userId']);
     }
 }

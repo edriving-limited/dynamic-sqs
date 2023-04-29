@@ -1,13 +1,13 @@
 <?php
 
-namespace eDriving\CustomSqsDriver;
+namespace eDriving\DynamicSqs;
 
 use Aws\Sqs\SqsClient;
 use Illuminate\Contracts\Queue\Queue as QueueContract;
 use Illuminate\Queue\Connectors\SqsConnector;
 use Illuminate\Support\Arr;
 
-class CustomSqsConnector extends SqsConnector
+class DynamicSqsConnector extends SqsConnector
 {
     /**
      * @param array<string, mixed> $config
@@ -21,7 +21,7 @@ class CustomSqsConnector extends SqsConnector
             $config['credentials'] = Arr::only($config, ['key', 'secret', 'token']);
         }
 
-        return new CustomSqsDriver(
+        return new DynamicSqsQueue(
             new SqsClient(
                 Arr::except($config, ['token'])
             ),

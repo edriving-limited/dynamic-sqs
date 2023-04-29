@@ -1,85 +1,62 @@
-# Custom SQS Payload Driver
+# Dynamic SQS
 
-This package adds support for custom SQS payloads within Laravel. It works by mapping a particular ID within the
-payload, to a job class, and then passing in matching arguments between the constructor and the payload data.
+This package adds support for custom SQS payloads with your standard Laravel jobs.
 
 ## Installation
 
-`composer require edriving-limited/custom-sqs-driver`
+First install the package using composer `composer require edriving-limited/dynamic-sqs`. Then publish the
+configuration files using `php artisan vendor:publish`.
 
-## Configuration
+## Setup
 
-To configure this, there are two steps, first you need to configure your SQS connection to use this driver, so update
-your SQS queue configuration like so...
+First, you should create your job class, the exact same way you would your standard Laravel jobs. Then, we need to
+create a "handler" class, this class is responsible for taking the payload from your SQS message and returning an
+instance of your job class.
 
-```php
-// config/queue.php
-
-[
-    'sqs' => [
-        'driver' => 'custom-sqs',
-        // ...
-        
-    ]
-]
-```
-
-Second, you need to provide a map, so we can instantiate the correct job class for your payload. You do this by adding a
-new top level array to your `queue` config file, called `job_map`. Inside this array, you need to provide key value
-pairs, the key being the ID that's in your payload, and the value being the class-string of your job.
+This class should implement the `JobHandlerContract` and define a `handle` method, which returns a job instance.
 
 ```php
-// config/queue.php
+use App\Jobs\SendWelcomeEmail;
+use eDriving\DynamicSqs\JobHandlerContract;
+use Illuminate\Contracts\Queue\ShouldQueue;
 
-[
-    'job_map' => [
-        'sendWelcomeEmail' => SendWelcomeEmail::class 
-    ]
-]
-```
-
-## Payload Format
-
-Your SQS payloads will need to be in a specific format for this to work. In your JSON object, you simple need two
-properties, `job_class_id` and `data`. The `job_class_id` is ID that is used to map this particular payload to a job
-class, `data` is any additional data required for the job.
-
-```json
+class SendWelcomeEmailHandler implements JobHandlerContract
 {
-  "job_class_id": "sendWelcomeEmail",
-  "data": {
-    "userId": 100
-  }
-}
-```
-
-## Data mapping
-
-When this job is instantiated, the job class constructor arguments are parsed and mapped to values in your payload data.
-So for the given payload above and job class below, the `userId` argument will correctly be passed.
-
-You must guarantee that either you have all the required arguments in your payload, or for any that don't, you provide
-a default value in the constructor argument. Otherwise, `null` will be passed which could cause type errors or
-unexpected behavior.
-
-```php
-class SendWelcomeEmailJob implements \Illuminate\Contracts\Queue\ShouldQueue {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-    
-    /** @var int */
-    private $driverId;
-    
-    /** @var bool */
-    private $isActive;
-    
-    /** @var bool */
-    private $isSubscriber;
-    
-    public function __construct(int $driverId, bool $isActive, bool $isSubscriber = false)
+    public function handle(array $payload): ShouldQueue
     {
-        $this->driverId = $driverId; // This will be 100
-        $this->isActive = $isActive; // This will cause a type error, since it's not in the payload and there is no default value
-        $this->isSubscriber = $isSubscriber; // This will be false since we provide that as a default value
+        return SendWelcomeEmail($payload['data']['userId']);    
     }
 }
+```
+
+With your handler class set up, we then need to define how to map any given SQS message, to a particular handler. To
+do this, open your newly published `config/dynamic-sqs.php` config file. In here, there are two properties we need to
+define, `discoverer` and `map`.
+
+### Discoverer
+
+This property is a closure which is responsible for taking a given payload, and returning the "handler id". This ID is a
+value in your payload which will be used determine which handler to use for this message. One is set up for you already,
+which returns the "handler" value from the payload. You're free to change this to match your particular message format.
+
+```php
+[
+    'discoverer' => function (array $payload): ?string {
+        return $payload['handler'] ?? null;
+    },
+]
+```
+
+### Map
+
+Finally, we need to map the handler ID's, to their handler classes. You do this by populating the `map` property with
+key => value pairs. The key being the handler ID, and the map being the class-string of the
+handler class.
+
+```php
+[
+    'map' => [
+        'sendWelcomeEmail' => SendWelcomeEmailHandler::class 
+    ]
+]
 ```
