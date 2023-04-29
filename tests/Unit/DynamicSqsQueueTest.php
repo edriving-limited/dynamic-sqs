@@ -147,7 +147,7 @@ class DynamicSqsQueueTest extends \eDriving\DynamicSqs\Tests\TestCase
     {
         $body = json_encode([
             'uuid' => '1eb00133-5bcc-478d-8f60-f66156ca27e6',
-            'displayName' => 'eDriving\CustomSqsDriver\Tests\Unit\ExampleJob',
+            'displayName' => 'eDriving\DynamicSqs\Tests\Unit\ExampleJob',
             'job' => 'Illuminate\\Queue\\CallQueuedHandler@call',
             'maxTries' => 5,
             'maxExceptions' => null,
@@ -155,7 +155,7 @@ class DynamicSqsQueueTest extends \eDriving\DynamicSqs\Tests\TestCase
             'timeout' => null,
             'timeoutAt' => null,
             'data' => [
-                'commandName' => 'eDriving\CustomSqsDriver\Tests\Unit\ExampleJob',
+                'commandName' => 'eDriving\DynamicSqs\Tests\Unit\ExampleJob',
                 'command' => serialize(new ExampleJob(100))
             ]
         ]);
