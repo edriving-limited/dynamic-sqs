@@ -1,12 +1,12 @@
 {
-  "name": "edriving-limited/custom-sqs-driver",
+  "name": "edriving-limited/dynamic-sqs",
   "description": "Adds support for custom SQS payloads in Laravel",
   "keywords": [
     "edriving-limited",
     "laravel",
-    "custom-sqs-driver"
+    "dynamic-sqs"
   ],
-  "homepage": "https://github.com/edriving-limited/custom-sqs-driver",
+  "homepage": "https://github.com/edriving-limited/dynamic-sqs",
   "license": "MIT",
   "authors": [
     {
@@ -28,20 +28,19 @@
   },
   "autoload": {
     "psr-4": {
-      "eDriving\\CustomSqsDriver\\": "src/"
+      "eDriving\\DynamicSqs\\": "src/"
     }
   },
   "autoload-dev": {
     "psr-4": {
-      "eDriving\\CustomSqsDriver\\Tests\\": "tests/"
+      "eDriving\\DynamicSqs\\Tests\\": "tests/"
     }
   },
   "scripts": {
     "post-autoload-dump": "@php ./vendor/bin/testbench package:discover --ansi",
     "analyse": "vendor/bin/phpstan analyse",
-    "test": "vendor/bin/pest",
-    "test-coverage": "vendor/bin/pest --coverage",
-    "format": "vendor/bin/pint"
+    "test": "vendor/bin/phpunit",
+    "format": "vendor/bin/phpcbf"
   },
   "config": {
     "sort-packages": true
@@ -49,7 +48,7 @@
   "extra": {
     "laravel": {
       "providers": [
-        "eDriving\\CustomSqsDriver\\Providers\\CustomSqsDriverServiceProvider"
+        "eDriving\\DynamicSqs\\DyanmicSqsServiceProvider"
       ]
     }
   },
