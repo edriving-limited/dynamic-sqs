@@ -7,6 +7,8 @@ This package adds support for custom SQS payloads with your standard Laravel job
 First install the package using composer `composer require edriving-limited/dynamic-sqs`. Then publish the
 configuration files using `php artisan vendor:publish`.
 
+You will also need to update the `driver` for your SQS connection to `dynamic-sqs`.
+
 ## Setup
 
 First, you should create your job class, the exact same way you would your standard Laravel jobs. Then, we need to
