@@ -48,7 +48,7 @@
   "extra": {
     "laravel": {
       "providers": [
-        "eDriving\\DynamicSqs\\DyanmicSqsServiceProvider"
+        "eDriving\\DynamicSqs\\DynamicSqsServiceProvider"
       ]
     }
   },
