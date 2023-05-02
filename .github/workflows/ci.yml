@@ -31,7 +31,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         uses: php-actions/composer@v6
         with:
-          php_version: 8.1
+          php_version: 7.3
 
       - name: Cache composer dependencies
         uses: actions/cache/save@v3
@@ -67,11 +67,7 @@ jobs:
 
   lint:
     runs-on: ubuntu-latest
-    name: Lint code with PHP ${{ matrix.php-version }}
-
-    strategy:
-      matrix:
-        php-version: [ '7.3', '7.4', '8.0', '8.1' ]
+    name: Lint code
 
     steps:
       - name: Checkout Code
@@ -82,7 +78,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: ${{ matrix.php-version }}
+          php-version: 7.3
 
       - name: Get changed files
         id: changed-files
@@ -101,7 +97,7 @@ jobs:
         if: steps.cache.outputs.cache-hit != 'true'
         uses: php-actions/composer@v6
         with:
-          php_version: ${{ matrix.php-version }}
+          php_version: 7.3
 
       - name: Cache composer dependencies
         uses: actions/cache/save@v3
