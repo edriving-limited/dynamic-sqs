@@ -12,10 +12,8 @@ return [
     | "map" array below.
     |
     */
-    'discoverer' => function (array $payload): ?string {
-        return $payload['handler'] ?? null;
-    },
-
+    'discoverer' => [\eDriving\DynamicSqs\Commands\DiscovererHandler::class, 'discover'],
+    
     /*
     |--------------------------------------------------------------------------
     | Job Map

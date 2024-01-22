@@ -4,18 +4,22 @@ This package adds support for custom SQS payloads with your standard Laravel job
 
 ## Installation
 
-First install the package using composer `composer require edriving-limited/dynamic-sqs`. Then publish the
+First install the package using composer `composer require edriving-limited/dynamic-sqs`. Then
+publish the
 configuration files using `php artisan vendor:publish`.
 
 You will also need to update the `driver` for your SQS connection to `dynamic-sqs`.
 
 ## Setup
 
-First, you should create your job class, the exact same way you would your standard Laravel jobs. Then, we need to
-create a "handler" class, this class is responsible for taking the payload from your SQS message and returning an
+First, you should create your job class, the exact same way you would your standard Laravel jobs.
+Then, we need to
+create a "handler" class, this class is responsible for taking the payload from your SQS message and
+returning an
 instance of your job class.
 
-This class should implement the `JobHandlerContract` and define a `handle` method, which returns a job instance.
+This class should implement the `JobHandlerContract` and define a `handle` method, which returns a
+job instance.
 
 ```php
 use App\Jobs\SendWelcomeEmail;
@@ -31,27 +35,31 @@ class SendWelcomeEmailHandler implements JobHandlerContract
 }
 ```
 
-With your handler class set up, we then need to define how to map any given SQS message, to a particular handler. To
-do this, open your newly published `config/dynamic-sqs.php` config file. In here, there are two properties we need to
+With your handler class set up, we then need to define how to map any given SQS message, to a
+particular handler. To
+do this, open your newly published `config/dynamic-sqs.php` config file. In here, there are two
+properties we need to
 define, `discoverer` and `map`.
 
 ### Discoverer
 
-This property is a closure which is responsible for taking a given payload, and returning the "handler id". This ID is a
-value in your payload which will be used determine which handler to use for this message. One is set up for you already,
-which returns the "handler" value from the payload. You're free to change this to match your particular message format.
+This property should reference a class, which is responsible for taking a given payload, and
+returning the "handler id". This ID is a
+value in your payload which will be used determine which handler to use for this message. One is set
+up for you already,
+which returns the "handler" value from the payload. You're free to create your own version of this
+class to suit your messages.
 
 ```php
 [
-    'discoverer' => function (array $payload): ?string {
-        return $payload['handler'] ?? null;
-    },
+    'discoverer' => [\eDriving\DynamicSqs\Commands\DiscovererHandler::class, 'discover'],
 ]
 ```
 
 ### Map
 
-Finally, we need to map the handler ID's, to their handler classes. You do this by populating the `map` property with
+Finally, we need to map the handler ID's, to their handler classes. You do this by populating
+the `map` property with
 key => value pairs. The key being the handler ID, and the map being the class-string of the
 handler class.
 
