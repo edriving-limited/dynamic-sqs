@@ -55,7 +55,7 @@ jobs:
           commit_author: eDriving Bot <keiron.lowe+edrivingbot@edriving.com>
 
       - name: Cancel workflow if changes detected
-        uses: andymckay/cancel-action@0.3
+        uses: andymckay/cancel-action@0.4
         if: steps.commit.outputs.changes_detected == 'true'
 
       - name: Run PHPCS
