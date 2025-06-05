@@ -50,9 +50,9 @@ jobs:
         with:
           commit_message: 'Code Style Fixes'
           skip_fetch: true
-          commit_user_name: bot-edriving
-          commit_user_email: keiron.lowe+edrivingbot@edriving.com
-          commit_author: eDriving Bot <keiron.lowe+edrivingbot@edriving.com>
+          commit_user_name: ${{ vars.EDRIVING_BOT_USERNAME }}
+          commit_user_email: ${{ vars.EDRIVING_BOT_EMAIL }}
+          commit_author: ${{ vars.EDRIVING_BOT_AUTHOR }}
 
       - name: Cancel workflow if changes detected
         uses: andymckay/cancel-action@0.5
